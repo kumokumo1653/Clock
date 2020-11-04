@@ -6,8 +6,7 @@
 #include <math.h>
 #include "Vec2.h"
 
-#define WIN_SIZE 360
-
+#define WIN_SIZE 720
 struct Time{
     int year;
     int month;
@@ -22,7 +21,7 @@ void Display(void);
 void Reshape(int, int);
 void Timer(int);
 struct Time GetTime();
-void DrawPolygonal(struct Vec2, int, int );
+void DrawCircle(struct Vec2, int, int , int, double, GLubyte color[]);
 
 int main(int argc, char** argv){
     glutInit(&argc, argv);
@@ -32,7 +31,9 @@ int main(int argc, char** argv){
     glutReshapeFunc(Reshape);
     glutTimerFunc(1000, Timer, 0);
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
-    glClearColor(0.0, 0.0, 1.0, 1.0);
+    glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA , GL_ONE_MINUS_SRC_ALPHA);
+    glClearColor(0.0, 0.0, 0.0, 1.0);
     glutMainLoop();
     return 0;
 }
@@ -55,27 +56,33 @@ void Display(void){
 
     glBegin(GL_LINES);
 
-    glVertex2i(center.x + start * sin((2 * M_PI * s) / 60), center.y - start * cos((2 * M_PI * s) / 60));
-    glVertex2i(center.x + ls * sin((2 * M_PI * s) / 60), center.y - ls * cos((2 * M_PI * s) / 60));
-    glVertex2i(center.x + start * sin((2 * M_PI * (60 * m + s)) / 3600), center.y - start * cos((2 * M_PI * (60 * m + s)) / 3600));
-    glVertex2i(center.x + lm * sin((2 * M_PI * (60 * m + s)) / 3600), center.y - lm * cos((2 * M_PI * (60 * m + s)) / 3600));
-    glVertex2i(center.x + start * sin((2 * M_PI * (3600 * h + 60 * m + s)) / 43200), center.y - start * cos((2 * M_PI * (3600 * h + 60 * m + s)) / 43200));
-    glVertex2i(center.x + lh * sin((2 * M_PI * (3600 * h + 60 * m + s)) / 43200), center.y - lh * cos((2 * M_PI * (3600 * h + 60 * m + s)) / 43200));
+    //glVertex2i(center.x + start * sin((2 * M_PI * s) / 60), center.y - start * cos((2 * M_PI * s) / 60));
+    //glVertex2i(center.x + ls * sin((2 * M_PI * s) / 60), center.y - ls * cos((2 * M_PI * s) / 60));
+    //glVertex2i(center.x + start * sin((2 * M_PI * (60 * m + s)) / 3600), center.y - start * cos((2 * M_PI * (60 * m + s)) / 3600));
+    //glVertex2i(center.x + lm * sin((2 * M_PI * (60 * m + s)) / 3600), center.y - lm * cos((2 * M_PI * (60 * m + s)) / 3600));
+    //glVertex2i(center.x + start * sin((2 * M_PI * (3600 * h + 60 * m + s)) / 43200), center.y - start * cos((2 * M_PI * (3600 * h + 60 * m + s)) / 43200));
+    //glVertex2i(center.x + lh * sin((2 * M_PI * (3600 * h + 60 * m + s)) / 43200), center.y - lh * cos((2 * M_PI * (3600 * h + 60 * m + s)) / 43200));
 
     glEnd();
+    GLubyte scolor[3] = {255,255,0};
+    DrawCircle(center, 40, 256,GL_POLYGON, -M_PI / 2 + (2 * M_PI * s) / 60, scolor);
+    GLubyte mcolor[3] = {255, 0, 0};
+    DrawCircle(center, 60, 256,GL_LINE_LOOP, -M_PI / 2 + (2 * M_PI * (60 * m + s)) / 3600 , mcolor);
+    GLubyte hcolor[3] = {255, 128, 128};
+    DrawCircle(center, 80, 256,GL_LINE_LOOP, -M_PI / 2 + (2 * M_PI * (3600 * h + 60 * m + s)) / 43200 , hcolor);
     //glFlush();
     glutSwapBuffers();
 }
 
 //座標系の再定義関数
 void Reshape(int w, int h){
+    glutReshapeWindow(WIN_SIZE, WIN_SIZE);
     glViewport(0, 0, w, h);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     gluOrtho2D(0, w, 0, h);
     glScaled(1, -1, 1);
     glTranslated(0, -h, 0);
-    glutReshapeWindow(WIN_SIZE, WIN_SIZE);
 }
 
 //タイマー割り込み
@@ -100,14 +107,34 @@ struct Time GetTime(){
     return nowtime;
 }
 
-void DrawPolygonal(struct Vec2 center, int r, int n){
+void DrawCircle(struct Vec2 center, int r, int n,int mode, double theta, GLubyte color[]){
     int i;
-    glBegin(GL_POLYGON); // ポリゴンの描画
-    for (i = 0; i < n; i++) {
-        double rate = (double)i / n;
-        double x = r * cos(2.0 * M_PI * rate);
-        double y = r * sin(2.0 * M_PI * rate);
-        glVertex2i(center.x + x, center.y + y); // 頂点座標を指定
+    //円描画
+    if(mode == GL_LINE_LOOP){
+        glBegin(mode); 
+        for (i = 0; i < n; i++) {
+            double rate = (double)i / n;
+            double x = r * cos(2.0 * M_PI * rate + theta);
+            double y = r * sin(2.0 * M_PI * rate + theta);
+            glColor4ub(color[0], color[1], color[2], i);
+            glVertex2i(center.x + x, center.y + y); // 頂点座標を指定
+        }
+        glColor3ub(255,255,255);
+        glEnd(); 
+    }else if(mode == GL_POLYGON){
+        for (i = 0; i < n; i += 2) {
+            glBegin(mode); 
+            double rate = (double)i / n;
+            double x = r * cos(2.0 * M_PI * rate + theta);
+            double y = r * sin(2.0 * M_PI * rate + theta);
+            glColor4ub(color[0], color[1], color[2], i);
+            glVertex2i(center.x, center.y); // 頂点座標を指定
+            glVertex2i(center.x + x, center.y + y); // 頂点座標を指定
+            rate = (double)(i + 1) / n;
+            x = r * cos(2.0 * M_PI * rate + theta);
+            y = r * sin(2.0 * M_PI * rate + theta);
+            glVertex2i(center.x + x, center.y + y); // 頂点座標を指定
+            glEnd(); 
+        }
     }
-    glEnd(); // ポリゴンの描画終了
 }
