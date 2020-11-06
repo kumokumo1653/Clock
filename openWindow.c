@@ -21,7 +21,7 @@ void Display(void);
 void Reshape(int, int);
 void Timer(int);
 struct Time GetTime();
-void DrawStinger(struct Vec2, int, int, int , int, double, GLubyte color[], double);
+void DrawStinger(struct Vec2, int, int, int , double, double, GLubyte color[]);
 void DrawCircle(struct Vec2, int, int, int, GLubyte color[]);
 
 int main(int argc, char** argv){
@@ -71,13 +71,13 @@ void Display(void){
     h_top.x = center.x + (h_r + h_inner) / 2 * sin((2 * M_PI * (3600 * h + 60 * m + s)) / 43200);
     h_top.y = center.y - (h_r + h_inner) / 2 * cos((2 * M_PI * (3600 * h + 60 * m + s)) / 43200);
     GLubyte scolor[3] = {255,255,0};
-    DrawStinger(center, 0, s_r, 1024,GL_POLYGON, -M_PI / 2 + (2 * M_PI * s) / 60, scolor, 1.0);
+    DrawStinger(center, 0, s_r, 1024,-M_PI / 2, -M_PI / 2 + (2 * M_PI * s) / 60, scolor);
     GLubyte mcolor[3] = {255, 0, 0};
     DrawCircle(m_top, (m_r - m_inner) / 2, 360, GL_POLYGON, mcolor);
-    DrawStinger(center, m_inner, m_r, 1024,GL_POLYGON, -M_PI / 2 + (2 * M_PI * (60 * m + s)) / 3600 , mcolor, 1.0);
+    DrawStinger(center, m_inner, m_r, 1024, -M_PI / 2 + (2 * M_PI * (60 * m + s)) / 3600, 3 * M_PI / 2 + (2 * M_PI * (60 * m + s)) / 3600 , mcolor);
     GLubyte hcolor[3] = {255, 128, 128};
     DrawCircle(h_top, (h_r - h_inner) / 2, 360, GL_POLYGON, hcolor);
-    DrawStinger(center, h_inner, h_r, 1024,GL_POLYGON, -M_PI / 2 + (2 * M_PI * (3600 * h + 60 * m + s)) / 43200 , hcolor,1.0);
+    DrawStinger(center, h_inner, h_r, 1024, -M_PI / 2 + (2 * M_PI * (3600 * h + 60 * m + s)) / 43200, 3 * M_PI / 2 + (2 * M_PI * (3600 * h + 60 * m + s)) / 43200 , hcolor);
     //glFlush();
     glutSwapBuffers();
 }
@@ -115,43 +115,29 @@ struct Time GetTime(){
     return nowtime;
 }
 
-void DrawStinger(struct Vec2 center,int b, int r, int n,int mode, double theta, GLubyte color[], double width){
+void DrawStinger(struct Vec2 center,int b, int r, int n, double theta,double etheta, GLubyte color[]){
     int i;
     //円描画
-    if(mode == GL_LINE_LOOP){
-        glLineWidth(width);
-        glBegin(mode); 
-        for (i = 0; i < n; i++) {
-            double rate = (double)i / n;
-            double x = r * cos(2.0 * M_PI * rate + theta);
-            double y = r * sin(2.0 * M_PI * rate + theta);
-            glColor4ub(color[0], color[1], color[2], i);
-            glVertex2i(center.x + x, center.y + y); // 頂点座標を指定
-        }
-        glColor3ub(255,255,255);
-        glLineWidth(1.0);
+    double normal_a = 256.0 / n;
+    double range = etheta - theta;
+    for (i = 0; i < n; i++) {
+        glBegin(GL_POLYGON); 
+        double rate = (double)i / n;
+        double x = r * cos(range * rate + theta);
+        double y = r * sin(range * rate + theta);
+        double bx = b * cos(range * rate + theta);
+        double by = b * sin(range * rate + theta);
+        glColor4ub(color[0], color[1], color[2], (GLubyte)(i * normal_a));
+        glVertex2i(center.x + bx, center.y + by); // 頂点座標を指定
+        glVertex2i(center.x + x, center.y + y); // 頂点座標を指定
+        rate = (double)(i + 1) / n;
+        x = r * cos(range * rate + theta);
+        y = r * sin(range * rate + theta);
+        bx = b * cos(range * rate + theta);
+        by = b * sin(range * rate + theta);
+        glVertex2i(center.x + x, center.y + y); // 頂点座標を指定
+        glVertex2i(center.x + bx, center.y + by); // 頂点座標を指定
         glEnd(); 
-    }else if(mode == GL_POLYGON){
-        double normal_a = 256.0 / n;
-        for (i = 0; i < n; i++) {
-            glBegin(mode); 
-            double rate = (double)i / n;
-            double x = r * cos(2.0 * M_PI * rate + theta);
-            double y = r * sin(2.0 * M_PI * rate + theta);
-            double bx = b * cos(2.0 * M_PI * rate + theta);
-            double by = b * sin(2.0 * M_PI * rate + theta);
-            glColor4ub(color[0], color[1], color[2], (GLubyte)(i * normal_a));
-            glVertex2i(center.x + bx, center.y + by); // 頂点座標を指定
-            glVertex2i(center.x + x, center.y + y); // 頂点座標を指定
-            rate = (double)(i + 1) / n;
-            x = r * cos(2.0 * M_PI * rate + theta);
-            y = r * sin(2.0 * M_PI * rate + theta);
-            bx = b * cos(2.0 * M_PI * rate + theta);
-            by = b * sin(2.0 * M_PI * rate + theta);
-            glVertex2i(center.x + x, center.y + y); // 頂点座標を指定
-            glVertex2i(center.x + bx, center.y + by); // 頂点座標を指定
-            glEnd(); 
-        }
     }
 }
 void DrawCircle(struct Vec2 center, int r, int n, int mode , GLubyte color[]){
