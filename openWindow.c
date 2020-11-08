@@ -76,7 +76,7 @@ int main(int argc, char** argv){
 
 //描画関数
 void Display(void){
-    int i;
+    int i,j;
     struct Vec2 center;
     struct Vec2 h_top;
     struct Vec2 m_top;
@@ -114,17 +114,17 @@ void Display(void){
     }else{
         DrawStinger(center, 0, s_r, 1024,-M_PI / 2, -M_PI / 2 + (2 * M_PI * s) / 60, scolor);
     }
-    GLubyte mcolor[3] = {255, 0, 0};
+    GLubyte mcolor[4] = {255, 0, 0, 255};
     DrawCircle(m_top, (m_r - m_inner) / 2, 360, GL_POLYGON, 0.0, 2 * M_PI, 1.0,  mcolor);
     DrawStinger(center, m_inner, m_r, 1024, -M_PI / 2 + (2 * M_PI * (60 * m + s)) / 3600, 3 * M_PI / 2 + (2 * M_PI * (60 * m + s)) / 3600 , mcolor);
-    GLubyte hcolor[3] = {255, 128, 128};
+    GLubyte hcolor[4] = {255, 128, 128, 255};
     DrawCircle(h_top, (h_r - h_inner) / 2, 360, GL_POLYGON, 0.0, 2 * M_PI, 1.0, hcolor);
     DrawStinger(center, h_inner, h_r, 1024, -M_PI / 2 + (2 * M_PI * (3600 * h + 60 * m + s)) / 43200, 3 * M_PI / 2 + (2 * M_PI * (3600 * h + 60 * m + s)) / 43200 , hcolor);
     //glFlush();
     //デジタル用透過背景
     if(status == DIGITAL){
         glBegin(GL_QUADS);
-        glColor4ub(0, 0, 0, 200);
+        glColor4ub(0, 0, 0, 150);
         glVertex2i(0, 0);
         glVertex2i(WIN_SIZE, 0);
         glVertex2i(WIN_SIZE, WIN_SIZE);
@@ -153,14 +153,14 @@ void Display(void){
         //GLubyte color[3] = {255, 255, 0};
         //DrawFive(center, 100, 200, 2.0, color);
         //-----------------debug
-        GLubyte color[3] = {255, 255, 0};
+        GLubyte color[4] = {255, 255, 0, 255};
+        GLubyte black[4] = {0, 0, 0, 100};
         float stroke = 3.0;
         int number_size = 40;
         struct Vec2 draw_point;
-        draw_point.x = 5;
+        draw_point.x = (number_size + 5) / 2;
         draw_point.y = WIN_SIZE / 2;
         for(i = 0; i < sizeof(digital_clock) / sizeof(digital_clock[1]); i++){
-            draw_point.x += number_size;
             //数字
             if(digital_clock[i] - '0' >= 0 && digital_clock[i] - '0' <= 9){
                 numbers[digital_clock[i] - '0'](draw_point, number_size, number_size * 2, stroke, color);
@@ -168,7 +168,9 @@ void Display(void){
             if(digital_clock[i] == ':'){
                 DrawColon(draw_point, number_size, number_size * 2, stroke, color);
             }
+            draw_point.x += (number_size + 5);
         }
+
     }
     glutSwapBuffers();
 }
@@ -236,12 +238,12 @@ void DrawCircle(struct Vec2 center, int r, int n, int mode,double stheta, double
     //円描画
     glLineWidth(stroke);
     glBegin(mode); 
+    glColor4ub(color[0], color[1], color[2], color[3]);
     double range = etheta - stheta;
     for (i = 0; i < n; i++) {
         double rate = (double)i / n;
         double x = r * cos(range * rate + stheta);
         double y = r * sin(range * rate + stheta);
-        glColor3ub(color[0], color[1], color[2]);
         glVertex2i(center.x + x, center.y + y); // 頂点座標を指定
     }
     glEnd(); 
@@ -252,7 +254,7 @@ void DrawEllipse(struct Vec2 center, int w_r, int h_r, int n, int mode,double st
     double range = etheta - stheta;
     glLineWidth(stroke);    
     glBegin(mode);
-    glColor3ub(color[0], color[1], color[2]);
+    glColor4ub(color[0], color[1], color[2], color[3]);
     for (i = 0; i < n; i++) {
         double rate = (double)i / n;
         double x = w_r * cos(range * rate + stheta);
@@ -286,7 +288,7 @@ void DrawZero(struct Vec2 center, int width, int height, float stroke, GLubyte c
 void DrawOne(struct Vec2 center, int width, int height, float stroke, GLubyte color[]){
     glLineWidth(stroke);    
     glBegin(GL_LINES);
-    glColor3ub(color[0], color[1], color[2]);
+    glColor4ub(color[0], color[1], color[2], color[3]);
     glVertex2i(center.x, center.y + height / 2);
     glVertex2i(center.x, center.y - height / 2);
     glVertex2i(center.x, center.y - height / 2);
@@ -304,7 +306,7 @@ void DrawTwo(struct Vec2 center, int width, int height, float stroke, GLubyte co
 
     glLineWidth(stroke);    
     glBegin(GL_LINES);
-    glColor3ub(color[0], color[1], color[2]);
+    glColor4ub(color[0], color[1], color[2], color[3]);
     glVertex2i(center.x + width / 2, center.y - height / 4);
     glVertex2i(center.x - width / 2, center.y + height / 2);
     glVertex2i(center.x - width / 2, center.y + height / 2);
@@ -319,7 +321,7 @@ void DrawTree(struct Vec2 center, int width, int height, float stroke, GLubyte c
     circle_center.y = center.y + height / 4;
     glLineWidth(stroke);    
     glBegin(GL_LINES);
-    glColor3ub(color[0], color[1], color[2]);
+    glColor4ub(color[0], color[1], color[2], color[3]);
     glVertex2i(center.x - 3 * width / 8, center.y - height / 2);
     glVertex2i(center.x + width / 2, center.y - height / 2);
     glVertex2i(center.x + width / 2, center.y - height / 2);
@@ -332,7 +334,7 @@ void DrawFour(struct Vec2 center, int width, int height, float stroke, GLubyte c
 
     glLineWidth(stroke);    
     glBegin(GL_LINES);
-    glColor3ub(color[0], color[1], color[2]);
+    glColor4ub(color[0], color[1], color[2], color[3]);
     glVertex2i(center.x + width / 4, center.y - height / 2);
     glVertex2i(center.x - width / 2, center.y + height / 4);
     glVertex2i(center.x - width / 2, center.y + height / 4);
@@ -349,7 +351,7 @@ void DrawFive(struct Vec2 center, int width, int height, float stroke, GLubyte c
 
     glLineWidth(stroke);    
     glBegin(GL_LINES);
-    glColor3ub(color[0], color[1], color[2]);
+    glColor4ub(color[0], color[1], color[2], color[3]);
     glVertex2i(center.x + width / 2, center.y - height / 2);
     glVertex2i(center.x - width / 4, center.y - height / 2);
     glVertex2i(center.x - width / 4, center.y - height / 2);
@@ -365,7 +367,7 @@ void DrawSix(struct Vec2 center, int width, int height, float stroke, GLubyte co
     circle_center.y = center.y + height / 4;
     glLineWidth(stroke);    
     glBegin(GL_LINES);
-    glColor3ub(color[0], color[1], color[2]);
+    glColor4ub(color[0], color[1], color[2], color[3]);
     glVertex2i(center.x, center.y - height / 2);
     glVertex2i(circle_center.x - sqrt(2) * width / 3, circle_center.y - width / 6);
 
@@ -378,7 +380,7 @@ void DrawSeven(struct Vec2 center, int width, int height, float stroke, GLubyte 
 
     glLineWidth(stroke);    
     glBegin(GL_LINES);
-    glColor3ub(color[0], color[1], color[2]);
+    glColor4ub(color[0], color[1], color[2], color[3]);
     glVertex2i(center.x - width / 2, center.y - height / 2);
     glVertex2i(center.x + width / 2, center.y - height / 2);
     glVertex2i(center.x + width / 2, center.y - height / 2);
@@ -405,7 +407,7 @@ void DrawNine(struct Vec2 center, int width, int height, float stroke, GLubyte c
     circle_center.y = center.y - height / 4;
     glLineWidth(stroke);    
     glBegin(GL_LINES);
-    glColor3ub(color[0], color[1], color[2]);
+    glColor4ub(color[0], color[1], color[2], color[3]);
     glVertex2i(center.x, center.y + height / 2);
     glVertex2i(circle_center.x + sqrt(2) * width / 3, circle_center.y + width / 6);
 
@@ -417,7 +419,7 @@ void DrawColon(struct Vec2 center, int width, int height,float stroke, GLubyte c
 
     glPointSize(stroke);    
     glBegin(GL_POINTS);
-    glColor3ub(color[0], color[1], color[2]);
+    glColor4ub(color[0], color[1], color[2], color[3]);
     glVertex2i(center.x, center.y - height / 4);
     glVertex2i(center.x, center.y + height / 4);
 
