@@ -1,10 +1,10 @@
-TARGET = open.exe
+TARGET = clock.exe
 
-SRCS = openWindow.c Vec2.c
+SRCS = clock.c Vec2.c Shape.c
 
 OBJS = ${SRCS:.c=.o}
 
-HEADERS = Vec2.h 
+HEADERS = Vec2.h Shape.h 
 
 CC = gcc
 CCFLAGS = -Wall -I/usr/include/GL
