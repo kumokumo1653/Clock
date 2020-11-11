@@ -20,8 +20,8 @@ struct Time{
     int sec;
 };
 
-void ConvertRGBtoHSV(int[], int[]);
-void ConvertHSVtoRGB(int[], int[]);
+void ConvertRGBtoHSV(GLubyte[], int[]);
+void ConvertHSVtoRGB(int[], GLubyte[]);
 void Display(void);
 void Reshape(int, int);
 void Timer(int);
@@ -37,10 +37,14 @@ void (*numbers[10])(struct Vec2, int, int, float, GLubyte []) = {DrawZero, DrawO
 int enterFlag;
 enum STATUS{
     ANALOG,
-    DIGITAL
+    DIGITAL,
+    CHANGE
 };
 enum STATUS status;
 
+GLubyte scolor[3] = {255,255,0};
+GLubyte mcolor[4] = {255, 0, 0, 255};
+GLubyte hcolor[4] = {255, 128, 128, 255};
 int main(int argc, char** argv){
     glutInit(&argc, argv);
     glutInitWindowSize(WIN_SIZE, WIN_SIZE);
@@ -60,13 +64,7 @@ int main(int argc, char** argv){
     status = ANALOG;
     enterFlag = 0;
 
-    int rgb[3] = {255,255,255};
-    int hsv[3];
-    ConvertRGBtoHSV(rgb, hsv);
-    printf("%d, %d, %d\n", hsv[0], hsv[1], hsv[2]);
-    ConvertHSVtoRGB(hsv, rgb);
-    printf("%d, %d, %d\n", rgb[0], rgb[1], rgb[2]);
-
+    srand((unsigned int)time(NULL));
     glutMainLoop();
     return 0;
 }
@@ -98,6 +96,7 @@ void Display(void){
     int h_r = 70;
     int m_inner = 70;
     int m_r = 90;
+
     glClear(GL_COLOR_BUFFER_BIT);
     
     //針描画
@@ -105,27 +104,18 @@ void Display(void){
     m_top.y = center.y - (m_r + m_inner) / 2 * cos((2 * M_PI * (60 * m + s)) / 3600);
     h_top.x = center.x + (h_r + h_inner) / 2 * sin((2 * M_PI * (3600 * h + 60 * m + s)) / 43200);
     h_top.y = center.y - (h_r + h_inner) / 2 * cos((2 * M_PI * (3600 * h + 60 * m + s)) / 43200);
-    GLubyte scolor[3] = {255,255,0};
     if(s == 0){
         DrawStinger(center, 0, s_r, 1024,-M_PI / 2, 3 * M_PI / 2, scolor);
     }else{
         DrawStinger(center, 0, s_r, 1024,-M_PI / 2, -M_PI / 2 + (2 * M_PI * s) / 60, scolor);
     }
-    GLubyte mcolor[4] = {255, 0, 0, 255};
     DrawCircle(m_top, (m_r - m_inner) / 2, 360, GL_POLYGON, 0.0, 2 * M_PI, 1.0,  mcolor);
     DrawStinger(center, m_inner, m_r, 1024, -M_PI / 2 + (2 * M_PI * (60 * m + s)) / 3600, 3 * M_PI / 2 + (2 * M_PI * (60 * m + s)) / 3600 , mcolor);
-    GLubyte hcolor[4] = {255, 128, 128, 255};
+
     DrawCircle(h_top, (h_r - h_inner) / 2, 360, GL_POLYGON, 0.0, 2 * M_PI, 1.0, hcolor);
     DrawStinger(center, h_inner, h_r, 1024, -M_PI / 2 + (2 * M_PI * (3600 * h + 60 * m + s)) / 43200, 3 * M_PI / 2 + (2 * M_PI * (3600 * h + 60 * m + s)) / 43200 , hcolor);
     //glFlush();
-    //文字表示
-    char text[100];
-    sprintf(text, "%4d/%02d/%02d (%s) %02d:%02d:%02d", nowtime.year, nowtime.month, nowtime.day, nowtime.weekday, nowtime.hour, nowtime.min, nowtime.sec);
-    glRasterPos2i(30, 30);
-    //glColor3ub(255, 255, 255);
-    for(i = 0;i < strlen(text); i++){
-        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_10, text[i]);
-    }
+
     //デジタル用透過背景
     if(status == DIGITAL){
         glBegin(GL_QUADS);
@@ -176,6 +166,33 @@ void Display(void){
         }
 
     }
+    if(status == CHANGE){
+        int hsv[3];
+        if(rand() % 2 == 0){
+            puts("H");
+            //色相固定
+            hsv[0] = rand() % 360;
+            hsv[1] = rand() % 34;
+            hsv[2] = 100;
+            ConvertHSVtoRGB(hsv, scolor);
+            hsv[1] += 33;
+            ConvertHSVtoRGB(hsv, mcolor);
+            hsv[1] += 33;
+            ConvertHSVtoRGB(hsv, hcolor);
+        }else{
+            //彩度固定
+            puts("H");
+            hsv[0] = rand() % 121;
+            hsv[1] = rand() % 101;
+            hsv[2] = 100;
+            ConvertHSVtoRGB(hsv, scolor);
+            hsv[0] += 120;
+            ConvertHSVtoRGB(hsv, mcolor);
+            hsv[0] += 120;
+            ConvertHSVtoRGB(hsv, hcolor);
+        }
+        status = ANALOG;
+    }
     glutSwapBuffers();
 }
 
@@ -223,6 +240,13 @@ void Mouse(int b, int s, int x, int y){
             }
         }
     }
+    if(b == GLUT_RIGHT_BUTTON){
+        if(s == GLUT_UP){
+            if(enterFlag){
+                if(status == ANALOG) status = CHANGE;
+            }
+        }
+    }
 }
 
 
@@ -231,10 +255,10 @@ void Entry(int s){
     if(s == GLUT_LEFT) enterFlag = 0;
 }
 
-void ConvertRGBtoHSV(int rgb[], int hsv[]){
-    double r = rgb[0] / 256.0;
-    double g = rgb[1] / 256.0;
-    double b = rgb[2] / 256.0;
+void ConvertRGBtoHSV(GLubyte rgb[], int hsv[]){
+    double r = rgb[0] / 255.0;
+    double g = rgb[1] / 255.0;
+    double b = rgb[2] / 255.0;
     double h, s, v;
     double min = r < g ?(r < b ? r : b):(g < b ? g : b);
     double max = r > g ?(r > b ? r : b):(g > b ? g : b); 
@@ -261,44 +285,61 @@ void ConvertRGBtoHSV(int rgb[], int hsv[]){
 }
 
 
-void ConvertHSVtoRGB(int hsv[], int rgb[]){
+void ConvertHSVtoRGB(int hsv[], GLubyte rgb[]){
+    int k = hsv[0] / 60;
     double h = hsv[0];
-    double s = hsv[1] / 100.0;
-    double v = hsv[2] / 100.0;
+    double s = hsv[1];
+    double v = hsv[2];
     double r, g, b;
-    double c = s * v;
-    double k = h / 60.0;
-    double x = c * (1 - fabs((int)k % 2 - 1));
-    r = v - c; g = v - c; b = v - c;
 
-    switch ((int)k) {
-        default:
-            break;
-        case 0:
-            r += c;
-            g += x;
-            break;
-        case 1:
-            r += x;
-            g += c;
-            break;
-        case 2:
-            g += c;
-            b += x;
-            break;
-        case 3:
-            g += x;
-            b += c;
-            break;
-        case 4:
-            r += x;
-            b += c;
-            break;
-        case 5:
-            r += c;
-            b += x;
+    s /= 100.0;
+    v /= 100.0; 
+
+    double p = v * (1 - s);
+    double q = v * (1 - s * (h / 60 - k));
+    double t =  v * (1 - s * (1 - (h / 60 - k)));
+    if(s == 0){
+        r = v;
+        g = v;
+        b = v;
+    }else{
+        switch (k) {
+            default:
+                break;
+            case 0:
+            case 6:
+                r = v;
+                g = t;
+                b = p;
+                break;
+            case 1:
+                r = q;
+                g = v;
+                b = p;
+                break;
+            case 2:
+                r = p;
+                g = v;
+                b = t;
+                break;
+            case 3:
+                r = p;
+                g = q;
+                b = v;
+                break;
+            case 4:
+                r = t;
+                g = p;
+                b = v;
+                break;
+            case 5:
+                r = v;
+                g = p;
+                b = q;
+                break;
+        }
     }
-    rgb[0] = r * 256 + 0.5;
-    rgb[1] = g * 256 + 0.5;
-    rgb[2] = b * 256 + 0.5;
+    rgb[0] = r * 255.0 + 0.5;
+    rgb[1] = g * 255.0 + 0.5;
+    rgb[2] = b * 255.0 + 0.5;
 }
