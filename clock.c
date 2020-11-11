@@ -20,7 +20,8 @@ struct Time{
     int sec;
 };
 
-
+void ConvertRGBtoHSV(int[], int[]);
+void ConvertHSVtoRGB(int[], int[]);
 void Display(void);
 void Reshape(int, int);
 void Timer(int);
@@ -58,6 +59,13 @@ int main(int argc, char** argv){
 
     status = ANALOG;
     enterFlag = 0;
+
+    int rgb[3] = {255,255,255};
+    int hsv[3];
+    ConvertRGBtoHSV(rgb, hsv);
+    printf("%d, %d, %d\n", hsv[0], hsv[1], hsv[2]);
+    ConvertHSVtoRGB(hsv, rgb);
+    printf("%d, %d, %d\n", rgb[0], rgb[1], rgb[2]);
 
     glutMainLoop();
     return 0;
@@ -221,4 +229,76 @@ void Mouse(int b, int s, int x, int y){
 void Entry(int s){
     if(s == GLUT_ENTERED) enterFlag = 1;
     if(s == GLUT_LEFT) enterFlag = 0;
+}
+
+void ConvertRGBtoHSV(int rgb[], int hsv[]){
+    double r = rgb[0] / 256.0;
+    double g = rgb[1] / 256.0;
+    double b = rgb[2] / 256.0;
+    double h, s, v;
+    double min = r < g ?(r < b ? r : b):(g < b ? g : b);
+    double max = r > g ?(r > b ? r : b):(g > b ? g : b); 
+    if(min == max)
+        h = 0.0;
+    else if(min == b) 
+        h = 60 * (g - r) / (max - min) + 60;
+    else if(min == r)
+        h = 60 * (b - g) / (max - min) + 180;
+    else if(min == g)
+        h = 60 * (r - b) / (max - min) + 300;
+    
+    if(max != min)
+        s = (max - min) / max;
+    else s = 0.0;
+
+    v = max;
+    if(h < 0) h += 360.0;
+    if(h > 360.0) h -= 360.0;
+    
+    hsv[0] = h + 0.5;
+    hsv[1] = s * 100 + 0.5;
+    hsv[2] = v * 100 + 0.5;
+}
+
+
+void ConvertHSVtoRGB(int hsv[], int rgb[]){
+    double h = hsv[0];
+    double s = hsv[1] / 100.0;
+    double v = hsv[2] / 100.0;
+    double r, g, b;
+    double c = s * v;
+    double k = h / 60.0;
+    double x = c * (1 - fabs((int)k % 2 - 1));
+    r = v - c; g = v - c; b = v - c;
+
+    switch ((int)k) {
+        default:
+            break;
+        case 0:
+            r += c;
+            g += x;
+            break;
+        case 1:
+            r += x;
+            g += c;
+            break;
+        case 2:
+            g += c;
+            b += x;
+            break;
+        case 3:
+            g += x;
+            b += c;
+            break;
+        case 4:
+            r += x;
+            b += c;
+            break;
+        case 5:
+            r += c;
+            b += x;
+    }
+    rgb[0] = r * 256 + 0.5;
+    rgb[1] = g * 256 + 0.5;
+    rgb[2] = b * 256 + 0.5;
 }
