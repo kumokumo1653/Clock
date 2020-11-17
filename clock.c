@@ -202,9 +202,9 @@ void Reshape(int w, int h){
     glViewport(0, 0, w, h);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    gluOrtho2D(0, w, 0, h);
+    gluOrtho2D(0, WIN_SIZE, 0, WIN_SIZE);
     glScaled(1, -1, 1);
-    glTranslated(0, -h, 0);
+    glTranslated(0, -WIN_SIZE, 0);
 }
 
 //タイマー割り込み
