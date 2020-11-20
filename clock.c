@@ -19,6 +19,11 @@ struct Time{
     int min;
     int sec;
 };
+enum STATUS{
+    ANALOG,
+    DIGITAL,
+    CHANGE
+};
 
 void ConvertRGBtoHSV(GLubyte[], int[]);
 void ConvertHSVtoRGB(int[], GLubyte[]);
@@ -35,11 +40,6 @@ void Entry(int);
 void (*numbers[10])(struct Vec2, int, int, float, GLubyte []) = {DrawZero, DrawOne, DrawTwo, DrawTree, DrawFour, DrawFive, DrawSix, DrawSeven, DrawEight, DrawNine};
 
 int enterFlag;
-enum STATUS{
-    ANALOG,
-    DIGITAL,
-    CHANGE
-};
 enum STATUS status;
 
 GLubyte scolor[3] = {255,255,0};
@@ -146,7 +146,7 @@ void Display(void){
         //glVertex2i(WIN_SIZE / 2 - 50, WIN_SIZE);
         //glEnd();
         //GLubyte color[3] = {255, 255, 0};
-        //DrawFive(center, 100, 200, 2.0, color);
+        //DrawTwo(center, 100, 200, 2.0, scolor);
         //-----------------debug
         GLubyte color[4] = {255, 255, 0, 255};
         float stroke = 3.0;

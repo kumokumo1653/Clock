@@ -80,7 +80,7 @@ void DrawTwo(struct Vec2 center, int width, int height, float stroke, GLubyte co
     struct Vec2 ellipse_center;
     ellipse_center.x = center.x;
     ellipse_center.y = center.y - height / 4;
-    DrawEllipse(ellipse_center, width / 2, height / 4, 1024, GL_LINE_STRIP, 0.0, -M_PI, stroke, color);
+    DrawCircle(ellipse_center, width / 2, 1024, GL_LINE_STRIP, 0.0, -M_PI, stroke, color);
 
     glLineWidth(stroke);    
     glBegin(GL_LINES);
