@@ -37,7 +37,7 @@ void Entry(int);
 
 
 //デジタル用関数ポインタ配列
-void (*numbers[10])(struct Vec2, int, int, float, GLubyte []) = {DrawZero, DrawOne, DrawTwo, DrawTree, DrawFour, DrawFive, DrawSix, DrawSeven, DrawEight, DrawNine};
+void (*numbers[10])(struct Vec2, int, int, float, GLubyte []) = {DrawZero, DrawOne, DrawTwo, DrawThree, DrawFour, DrawFive, DrawSix, DrawSeven, DrawEight, DrawNine};
 
 int enterFlag;
 enum STATUS status;
@@ -128,25 +128,25 @@ void Display(void){
 
         //デジタル時刻表示
         //-------------------------debug
-        //glBegin(GL_LINES);
-        //glColor3ub(255,255,255);
+        glBegin(GL_LINES);
+        glColor3ub(255,255,255);
 
-        //glVertex2i(0, WIN_SIZE / 2);
-        //glVertex2i(WIN_SIZE, WIN_SIZE / 2);
-        //glVertex2i(0, WIN_SIZE / 2 + 100);
-        //glVertex2i(WIN_SIZE, WIN_SIZE / 2 + 100);
-        //glVertex2i(0, WIN_SIZE / 2 - 100);
-        //glVertex2i(WIN_SIZE, WIN_SIZE / 2 - 100);
+        glVertex2i(0, WIN_SIZE / 2);
+        glVertex2i(WIN_SIZE, WIN_SIZE / 2);
+        glVertex2i(0, WIN_SIZE / 2 + 100);
+        glVertex2i(WIN_SIZE, WIN_SIZE / 2 + 100);
+        glVertex2i(0, WIN_SIZE / 2 - 100);
+        glVertex2i(WIN_SIZE, WIN_SIZE / 2 - 100);
 
-        //glVertex2i(WIN_SIZE / 2, 0);
-        //glVertex2i(WIN_SIZE / 2, WIN_SIZE);
-        //glVertex2i(WIN_SIZE / 2 + 50, 0);
-        //glVertex2i(WIN_SIZE / 2 + 50, WIN_SIZE);
-        //glVertex2i(WIN_SIZE / 2 - 50, 0);
-        //glVertex2i(WIN_SIZE / 2 - 50, WIN_SIZE);
-        //glEnd();
+        glVertex2i(WIN_SIZE / 2, 0);
+        glVertex2i(WIN_SIZE / 2, WIN_SIZE);
+        glVertex2i(WIN_SIZE / 2 + 50, 0);
+        glVertex2i(WIN_SIZE / 2 + 50, WIN_SIZE);
+        glVertex2i(WIN_SIZE / 2 - 50, 0);
+        glVertex2i(WIN_SIZE / 2 - 50, WIN_SIZE);
+        glEnd();
         //GLubyte color[3] = {255, 255, 0};
-        //DrawTwo(center, 100, 200, 2.0, scolor);
+        DrawThree(center, 100, 200, 2.0, scolor);
         //-----------------debug
         GLubyte color[4] = {255, 255, 0, 255};
         float stroke = 3.0;
@@ -169,7 +169,6 @@ void Display(void){
     if(status == CHANGE){
         int hsv[3];
         if(rand() % 2 == 0){
-            puts("H");
             //色相固定
             hsv[0] = rand() % 360;
             hsv[1] = rand() % 34;
@@ -181,7 +180,6 @@ void Display(void){
             ConvertHSVtoRGB(hsv, hcolor);
         }else{
             //彩度固定
-            puts("H");
             hsv[0] = rand() % 121;
             hsv[1] = rand() % 101;
             hsv[2] = 100;

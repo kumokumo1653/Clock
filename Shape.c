@@ -65,10 +65,9 @@ void DrawZero(struct Vec2 center, int width, int height, float stroke, GLubyte c
 
 void DrawOne(struct Vec2 center, int width, int height, float stroke, GLubyte color[]){
     glLineWidth(stroke);    
-    glBegin(GL_LINES);
+    glBegin(GL_LINE_STRIP);
     glColor4ub(color[0], color[1], color[2], color[3]);
     glVertex2i(center.x, center.y + height / 2);
-    glVertex2i(center.x, center.y - height / 2);
     glVertex2i(center.x, center.y - height / 2);
     glVertex2i(center.x - width / 4, center.y - 3 * height / 8);
 
@@ -83,25 +82,23 @@ void DrawTwo(struct Vec2 center, int width, int height, float stroke, GLubyte co
     DrawCircle(ellipse_center, width / 2, 1024, GL_LINE_STRIP, 0.0, -M_PI, stroke, color);
 
     glLineWidth(stroke);    
-    glBegin(GL_LINES);
+    glBegin(GL_LINE_STRIP);
     glColor4ub(color[0], color[1], color[2], color[3]);
     glVertex2i(center.x + width / 2, center.y - height / 4);
-    glVertex2i(center.x - width / 2, center.y + height / 2);
     glVertex2i(center.x - width / 2, center.y + height / 2);
     glVertex2i(center.x + width / 2, center.y + height / 2);
     glEnd();
 }
 
-void DrawTree(struct Vec2 center, int width, int height, float stroke, GLubyte color[]){
+void DrawThree(struct Vec2 center, int width, int height, float stroke, GLubyte color[]){
 
     struct Vec2 circle_center;
     circle_center.x = center.x;
     circle_center.y = center.y + height / 4;
     glLineWidth(stroke);    
-    glBegin(GL_LINES);
+    glBegin(GL_LINE_STRIP);
     glColor4ub(color[0], color[1], color[2], color[3]);
     glVertex2i(center.x - 3 * width / 8, center.y - height / 2);
-    glVertex2i(center.x + width / 2, center.y - height / 2);
     glVertex2i(center.x + width / 2, center.y - height / 2);
     glVertex2i(center.x, center.y);
     glEnd();
