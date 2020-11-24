@@ -27,11 +27,12 @@ enum STATUS{
 
 void ConvertRGBtoHSV(GLubyte[], int[]);
 void ConvertHSVtoRGB(int[], GLubyte[]);
+struct Time GetTime();
+
+//コールバック関数
 void Display(void);
 void Reshape(int, int);
 void Timer(int);
-struct Time GetTime();
-
 void Mouse(int, int, int, int);
 void Entry(int);
 
@@ -39,16 +40,21 @@ void Entry(int);
 //デジタル用関数ポインタ配列
 void (*numbers[10])(struct Vec2, int, int, float, GLubyte []) = {DrawZero, DrawOne, DrawTwo, DrawThree, DrawFour, DrawFive, DrawSix, DrawSeven, DrawEight, DrawNine};
 
+//ウィンドウ進入フラグ
 int enterFlag;
+//状態を保存
 enum STATUS status;
 
+//色の指定
 GLubyte scolor[3] = {255,255,0};
 GLubyte mcolor[4] = {255, 0, 0, 255};
 GLubyte hcolor[4] = {255, 128, 128, 255};
 int main(int argc, char** argv){
     glutInit(&argc, argv);
+    //サイズ指定
     glutInitWindowSize(WIN_SIZE, WIN_SIZE);
-    glutCreateWindow("アナログ時計");
+    //タイトル
+    glutCreateWindow("Clock");
     glutDisplayFunc(Display);
     glutReshapeFunc(Reshape);
     glutTimerFunc(500, Timer, 0);
@@ -92,29 +98,29 @@ void Display(void){
     int m = nowtime.min;
     int s = nowtime.sec;
     int s_r = 40;
-    int h_inner = 40;
     int h_r = 70;
-    int m_inner = 70;
     int m_r = 90;
+    double stheta = (2 * M_PI * s) / 60;
+    double mtheta = (2 * M_PI * (60 * m + s)) / 3600;
+    double htheta = (2 * M_PI * (3600 * h + 60 * m + s)) / 43200;
 
     glClear(GL_COLOR_BUFFER_BIT);
     
     //針描画
-    m_top.x = center.x + (m_r + m_inner) / 2 * sin((2 * M_PI * (60 * m + s)) / 3600);
-    m_top.y = center.y - (m_r + m_inner) / 2 * cos((2 * M_PI * (60 * m + s)) / 3600);
-    h_top.x = center.x + (h_r + h_inner) / 2 * sin((2 * M_PI * (3600 * h + 60 * m + s)) / 43200);
-    h_top.y = center.y - (h_r + h_inner) / 2 * cos((2 * M_PI * (3600 * h + 60 * m + s)) / 43200);
+    m_top.x = center.x + (m_r + h_r) / 2 * sin(mtheta);
+    m_top.y = center.y - (m_r + h_r) / 2 * cos(mtheta);
+    h_top.x = center.x + (h_r + s_r) / 2 * sin(htheta);
+    h_top.y = center.y - (h_r + s_r) / 2 * cos(htheta);
     if(s == 0){
         DrawStinger(center, 0, s_r, 1024,-M_PI / 2, 3 * M_PI / 2, scolor);
     }else{
-        DrawStinger(center, 0, s_r, 1024,-M_PI / 2, -M_PI / 2 + (2 * M_PI * s) / 60, scolor);
+        DrawStinger(center, 0, s_r, 1024,-M_PI / 2, -M_PI / 2 + stheta, scolor);
     }
-    DrawCircle(m_top, (m_r - m_inner) / 2, 360, GL_POLYGON, 0.0, 2 * M_PI, 1.0,  mcolor);
-    DrawStinger(center, m_inner, m_r, 1024, -M_PI / 2 + (2 * M_PI * (60 * m + s)) / 3600, 3 * M_PI / 2 + (2 * M_PI * (60 * m + s)) / 3600 , mcolor);
+    DrawCircle(m_top, (m_r - h_r) / 2, 360, GL_POLYGON, 0.0, 2 * M_PI, 1.0,  mcolor);
+    DrawStinger(center, h_r, m_r, 1024, -M_PI / 2 + mtheta, 3 * M_PI / 2 + mtheta , mcolor);
 
-    DrawCircle(h_top, (h_r - h_inner) / 2, 360, GL_POLYGON, 0.0, 2 * M_PI, 1.0, hcolor);
-    DrawStinger(center, h_inner, h_r, 1024, -M_PI / 2 + (2 * M_PI * (3600 * h + 60 * m + s)) / 43200, 3 * M_PI / 2 + (2 * M_PI * (3600 * h + 60 * m + s)) / 43200 , hcolor);
-    //glFlush();
+    DrawCircle(h_top, (h_r - s_r) / 2, 360, GL_POLYGON, 0.0, 2 * M_PI, 1.0, hcolor);
+    DrawStinger(center, s_r, h_r, 1024, -M_PI / 2 + htheta, 3 * M_PI / 2 + htheta, hcolor);
 
     //デジタル用透過背景
     if(status == DIGITAL){
@@ -127,32 +133,11 @@ void Display(void){
         glEnd();
 
         //デジタル時刻表示
-        //-------------------------debug
-        glBegin(GL_LINES);
-        glColor3ub(255,255,255);
-
-        glVertex2i(0, WIN_SIZE / 2);
-        glVertex2i(WIN_SIZE, WIN_SIZE / 2);
-        glVertex2i(0, WIN_SIZE / 2 + 100);
-        glVertex2i(WIN_SIZE, WIN_SIZE / 2 + 100);
-        glVertex2i(0, WIN_SIZE / 2 - 100);
-        glVertex2i(WIN_SIZE, WIN_SIZE / 2 - 100);
-
-        glVertex2i(WIN_SIZE / 2, 0);
-        glVertex2i(WIN_SIZE / 2, WIN_SIZE);
-        glVertex2i(WIN_SIZE / 2 + 50, 0);
-        glVertex2i(WIN_SIZE / 2 + 50, WIN_SIZE);
-        glVertex2i(WIN_SIZE / 2 - 50, 0);
-        glVertex2i(WIN_SIZE / 2 - 50, WIN_SIZE);
-        glEnd();
-        //GLubyte color[3] = {255, 255, 0};
-        DrawThree(center, 100, 200, 2.0, scolor);
-        //-----------------debug
         GLubyte color[4] = {255, 255, 0, 255};
         float stroke = 3.0;
         int number_size = 40;
         struct Vec2 draw_point;
-        draw_point.x = (number_size + 5) / 2;
+        draw_point.x = (number_size) / 2 + 5;
         draw_point.y = WIN_SIZE / 2;
         for(i = 0; i < sizeof(digital_clock) / sizeof(digital_clock[1]); i++){
             //数字
@@ -191,10 +176,12 @@ void Display(void){
         }
         status = ANALOG;
     }
+    glFlush();
     glutSwapBuffers();
 }
 
 //座標系の再定義関数
+//w 幅　h 高さ
 void Reshape(int w, int h){
     glutReshapeWindow(WIN_SIZE, WIN_SIZE);
     glViewport(0, 0, w, h);

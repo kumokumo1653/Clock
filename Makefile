@@ -1,16 +1,16 @@
-TARGET = clock.exe
+TARGET = j17404.exe
 
-SRCS = clock.c Vec2.c Shape.c
+SRCS = clock.c Shape.c
 
 OBJS = ${SRCS:.c=.o}
 
 HEADERS = Vec2.h Shape.h 
 
-CC = gcc
-CCFLAGS = -Wall -I/usr/include/GL
-LD = gcc
+CC = i686-pc-cygwin-gcc
+CCFLAGS = -Wall -I/usr/include/opengl
+LD = i686-pc-cygwin-gcc
 LDFLAGS = 
-LIBS =  -lglpng -lglut -lGLU -lGL -lm
+LIBS =  -lglut32 -lglu32 -lopengl32  -lm icon.o
 
 #OBJSからTARGETをつくる
 $(TARGET) : $(OBJS)
